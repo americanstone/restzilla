@@ -108,7 +108,6 @@ public class DefaultHandlerMappingFactory implements ResourceHandlerMappingFacto
     private class DefaultCrudController {
         
         private final RestInformation information;
-        
         private final Mapper mapper;
 
         /**
@@ -168,7 +167,7 @@ public class DefaultHandlerMappingFactory implements ResourceHandlerMappingFacto
         }
 
         private Listable<?> buildListable() {
-            RestInformation.ResultInformation findAll = information.getResultInfo(information.findAll());
+            ResultInformation findAll = information.getResultInfo(information.findAll());
             Class<?> resultType = findAll.getResultType();
 
             Listable<?> delegate = new CrudServiceListable(entityService, information.getEntityClass());
@@ -197,7 +196,7 @@ public class DefaultHandlerMappingFactory implements ResourceHandlerMappingFacto
         }
 
         private Object mapIdToResult(Serializable id) {
-            RestInformation.ResultInformation findOne = information.getResultInfo(information.findOne());
+            ResultInformation findOne = information.getResultInfo(information.findOne());
             Object entity;
             if (information.hasCustomQuery(findOne)) {
                 entity = readService.getOne((Class) findOne.getQueryType(), id);
@@ -273,8 +272,8 @@ public class DefaultHandlerMappingFactory implements ResourceHandlerMappingFacto
         }
         
         private Object doUpdate(Serializable id, String json, Object input, boolean patch) {
-            Persistable<?> output = entityService.save(new LazyMergingEntity(id, input, json, patch));
-            return mapToResult(output, information.update());
+            Persistable<?> saved = entityService.save(new Updater(id, input, json, patch));
+            return mapToResult(saved, information.update());
         }
 
         /**
@@ -298,13 +297,16 @@ public class DefaultHandlerMappingFactory implements ResourceHandlerMappingFacto
          * @return the entity in its result type
          */
         private <T extends Persistable<ID>, ID extends Serializable> Object mapToResult(Persistable<?> entity, RestConfig config) {
-            RestInformation.ResultInformation resultInfo = information.getResultInfo(config);
+            ResultInformation resultInfo = information.getResultInfo(config);
+
             Object result = entity;
             if (information.hasCustomQuery(resultInfo)) {
                 final ID id = ((Persistable<ID>) entity).getId();
                 result = readService.getOne((Class) resultInfo.getQueryType(), id);
             }
-            return mapper.map(result, resultInfo.getResultType());
+
+            Class<?> resultType = resultInfo.getResultType();
+            return mapper.map(result, resultType);
         }
 
         private void init() {
@@ -321,23 +323,23 @@ public class DefaultHandlerMappingFactory implements ResourceHandlerMappingFacto
          * @author Jeroen van Schagen
          * @since Nov 13, 2015
          */
-        private class LazyMergingEntity implements Lazy<Object> {
-            
+        private class Updater implements Lazy<Object> {
+
             private final Serializable id;
-            
+
             private final Object input;
-            
+
             private final String json;
-            
+
             private final boolean patch;
-            
-            public LazyMergingEntity(Serializable id, Object input, String json, boolean patch) {
+
+            public Updater(Serializable id, Object input, String json, boolean patch) {
                 this.id = id;
                 this.input = input;
                 this.json = json;
                 this.patch = patch;
             }
-            
+
             /**
              * {@inheritDoc}
              */
@@ -355,7 +357,7 @@ public class DefaultHandlerMappingFactory implements ResourceHandlerMappingFacto
                 }
                 return entity;
             }
-            
+
         }
 
     }
@@ -366,8 +368,7 @@ public class DefaultHandlerMappingFactory implements ResourceHandlerMappingFacto
      * @author Jeroen van Schagen
      * @since Sep 3, 2015
      */
-    private static class DefaultHandlerMapping
-      extends ResourceHandlerMapping {
+    private static class DefaultHandlerMapping extends ResourceHandlerMapping {
         
         private static final String FIND_ALL_NAME = "findAll";
         private static final String FIND_ONE_NAME = "findOne";

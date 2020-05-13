@@ -128,6 +128,6 @@ public @interface RestResource {
      * (Optional) the configuration of our {@code delete}
      * @return the configuration
      */
-    RestConfig delete() default @RestConfig;
+    RestConfig delete() default @RestConfig(resultType = void.class);
 
 }

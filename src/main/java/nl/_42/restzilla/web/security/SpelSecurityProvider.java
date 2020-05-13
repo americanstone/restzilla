@@ -3,10 +3,6 @@
  */
 package nl._42.restzilla.web.security;
 
-import java.security.Principal;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.EvaluationContext;
@@ -18,6 +14,9 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
+
+import javax.servlet.http.HttpServletRequest;
+import java.security.Principal;
 
 /**
  * Implementation that evaluates SPEL expressions.
@@ -37,7 +36,6 @@ public class SpelSecurityProvider implements SecurityProvider {
      */
     @Override
     public boolean isAuthorized(String[] expressions, HttpServletRequest request) {
-        boolean authorized = true;
         if (expressions.length > 0) {
             Authentication authentication = getAuthentication(request);
             FilterInvocation invocation = new FilterInvocation(request.getServletPath(), request.getMethod());
@@ -51,7 +49,7 @@ public class SpelSecurityProvider implements SecurityProvider {
                 }
             }
         }
-        return authorized;
+        return true;
     }
 
     private Authentication getAuthentication(HttpServletRequest request) {
@@ -61,13 +59,13 @@ public class SpelSecurityProvider implements SecurityProvider {
         } else {
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
             if (authentication == null) {
-                authentication = annonymous();
+                authentication = anonymous();
             }
             return authentication;
         }
     }
 
-    private AnonymousAuthenticationToken annonymous() {
+    private AnonymousAuthenticationToken anonymous() {
         return new AnonymousAuthenticationToken("anonymousUser", "anonymousUser", AuthorityUtils.createAuthorityList("ROLE_ANONYMOUS"));
     }
     

@@ -52,17 +52,6 @@ public interface CrudService<T extends Persistable<ID>, ID extends Serializable>
     }
 
     /**
-     * Deletes the entity by identifier.
-     *
-     * @param id must not be {@literal null}.
-     */
-    @Transactional
-    default void delete(ID id) {
-        Objects.requireNonNull(id, "Cannot delete based on a null identifier");
-        getRepository().deleteById(id);
-    }
-
-    /**
      * Deletes the entity.
      *
      * @param entity the entity to delete
@@ -71,21 +60,6 @@ public interface CrudService<T extends Persistable<ID>, ID extends Serializable>
     default void delete(T entity) {
         Objects.requireNonNull(entity, "Cannot delete a null entity");
         getRepository().delete(entity);
-    }
-
-    /**
-     * Deletes the entity.
-     *
-     * The entity is provided as a lazy value, allowing us to perform
-     * modifications inside of the service transaction.
-     *
-     * @param supplier the entity supplier
-     */
-    @Transactional
-    default void delete(final Lazy<T> supplier) {
-        this.delete(
-          supplier.apply()
-        );
     }
 
 }

@@ -72,10 +72,6 @@ public class RestInformation {
         T[] annotations = containerClass.getAnnotationsByType(annotationType);
         return annotations.length > 0 ? annotations[0] : null;
     }
-    
-    public static boolean isSupported(Class<?> entityClass) {
-        return findAnnotation(entityClass, RestResource.class) != null;
-    }
 
     /**
      * Retrieve the base path.
@@ -159,15 +155,6 @@ public class RestInformation {
      */
     public boolean hasCustomQuery(ResultInformation resultInfo) {
         return !entityClass.equals(resultInfo.getQueryType());
-    }
-    
-    /**
-     * Determine the result information.
-     * 
-     * @return the result information
-     */
-    public ResultInformation getResultInfo() {
-        return resultInfo;
     }
 
     /**
@@ -299,33 +286,6 @@ public class RestInformation {
      */
     public RestConfig delete() {
         return annotation.delete();
-    }
-    
-    /**
-     * Information about the REST result.
-     *
-     * @author Jeroen van Schagen
-     * @since Dec 10, 2015
-     */
-    public static class ResultInformation {
-        
-        private final Class<?> queryType;
-        
-        private final Class<?> resultType;
-        
-        private ResultInformation(Class<?> queryType, Class<?> resultType) {
-            this.queryType = queryType;
-            this.resultType = resultType;
-        }
-        
-        public Class<?> getQueryType() {
-            return queryType;
-        }
-        
-        public Class<?> getResultType() {
-            return resultType;
-        }
-        
     }
 
 }
